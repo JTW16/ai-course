@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>토스페이먼츠 주문서형 결제 테스트</title>
+    <script src="https://js.tosspayments.com/v2/standard"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #payment-method, #agreement { margin-bottom: 20px; border: 1px solid #eee; padding: 10px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        button:disabled { cursor: not-allowed; opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <h1>토스페이먼츠 주문서형 결제 테스트</h1>
+    
+    <div id="payment-method"></div>
+    <div id="agreement"></div>
+    
+    <button id="payment-button" disabled>결제하기</button>
+
+    <script>
+        const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
+        const customerKey = TossPayments.ANONYMOUS;
+
+        const tossPayments = window.TossPayments(clientKey);
+        const widgets = tossPayments.widgets({ customerKey });
+
+        widgets.setAmount({
+            currency: 'KRW',
+            value: 1000,
+        });
+
+        widgets.renderPaymentMethods({
+            selector: '#payment-method',
+            variantKey: 'DEFAULT',
+        });
+
+        widgets.renderAgreement({
+            selector: '#agreement',
+            variantKey: 'AGREEMENT',
+        }).then((agreementWidget) => {
+            agreementWidget.on('agreementStatusChange', (agreementStatus) => {
+                const button = document.getElementById('payment-button');
+                button.disabled = !agreementStatus.agreedRequiredTerms;
+            });
+        }).catch((err) => {
+            console.error('Agreement rendering failed:', err);
+        });
+
+        document.getElementById('payment-button').addEventListener('click', async () => {
+            const orderId = Math.random().toString(36).substring(2, 11);
+            const orderName = '테스트 상품';
+            const successUrl = window.location.origin + '/success';
+            const failUrl = window.location.origin + '/fail';
+
+            try {
+                await widgets.requestPayment({
+                    orderId,
+                    orderName,
+                    successUrl,
+                    failUrl,
+                });
+            } catch (error) {
+                console.error('결제 요청 중 에러 발생:', error);
+                alert('결제 요청 중 오류가 발생했습니다.');
+            }
+        });
+    </script>
+</body>
+</html>

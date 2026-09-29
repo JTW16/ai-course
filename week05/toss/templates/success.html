@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 성공</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; max-width: 600px; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>결제 성공!</h1>
+    
+    {% if error %}
+        <h2 style="color: red;">결제 실패</h2>
+        <table>
+            <tr><th>Code</th><td>{{ error.code }}</td></tr>
+            <tr><th>Message</th><td>{{ error.message }}</td></tr>
+        </table>
+    {% else %}
+        <table>
+            <thead>
+                <tr><th>항목</th><th>값</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>status</td><td>{{ data.status }}</td></tr>
+                <tr><td>orderName</td><td>{{ data.orderName }}</td></tr>
+                <tr><td>totalAmount</td><td>{{ data.totalAmount }}</td></tr>
+                <tr><td>method</td><td>{{ data.method }}</td></tr>
+                <tr><td>approvedAt</td><td>{{ data.approvedAt }}</td></tr>
+            </tbody>
+        </table>
+
+        <h3>원본 JSON</h3>
+        <pre>{{ data | tojson(indent=2) }}</pre>
+    {% endif %}
+</body>
+</html>

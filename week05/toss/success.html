@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 성공</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; max-width: 600px; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>결제 성공!</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>항목</th>
+                <th>값</th>
+            </tr>
+        </thead>
+        <tbody id="result-table">
+        </tbody>
+    </table>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const tableBody = document.getElementById('result-table');
+
+        const params = {
+            'paymentKey': urlParams.get('paymentKey'),
+            'orderId': urlParams.get('orderId'),
+            'amount': urlParams.get('amount')
+        };
+
+        let hasData = false;
+        for (const [key, value] of Object.entries(params)) {
+            if (value) {
+                const row = tableBody.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                cell1.textContent = key;
+                cell2.textContent = value;
+                hasData = true;
+            }
+        }
+
+        if (!hasData) {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = "데이터가 없습니다.";
+            row.insertCell(1).textContent = "-";
+        }
+    </script>
+</body>
+</html>
