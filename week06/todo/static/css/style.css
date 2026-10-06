@@ -1,0 +1,149 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+    margin: 0;
+    padding: 40px 16px;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+.container {
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+/* 입력 폼 */
+.add-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.add-form input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.add-form input[type="text"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+button {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    white-space: nowrap;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* 목록 */
+.todo-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.todo-item form {
+    margin: 0;
+}
+
+/* 좌측 체크박스 */
+.checkbox {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    line-height: 1;
+    background: white;
+    color: white;
+    border: 2px solid #aaa;
+    border-radius: 50%;
+}
+
+.checkbox:hover {
+    background: #e8f0fe;
+    border-color: #007bff;
+}
+
+.checkbox.checked {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.checkbox.checked:hover {
+    background: #218838;
+    border-color: #218838;
+}
+
+/* 내용 */
+.todo-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.todo-title {
+    overflow-wrap: anywhere;
+}
+
+.todo-date {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.completed {
+    text-decoration: line-through;
+    color: #888;
+}
+
+/* 우측 삭제 버튼 */
+.delete-btn {
+    background-color: #dc3545;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+.empty {
+    text-align: center;
+    color: #999;
+    padding: 24px;
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <h1>My Todo List</h1>
+
+        <form class="add-form" action="{{ url_for('add') }}" method="POST">
+            <input type="text" name="title" placeholder="할 일을 입력하세요" required autofocus>
+            <button type="submit">추가</button>
+        </form>
+
+        <ul class="todo-list">
+            {% for todo in todos %}
+            <li class="todo-item{{ ' is-completed' if todo.is_completed else '' }}">
+                <form class="toggle-form" action="{{ url_for('toggle', todo_id=todo.id) }}" method="POST">
+                    <button type="submit" class="checkbox{{ ' checked' if todo.is_completed else '' }}"
+                            aria-label="{{ '완료 취소' if todo.is_completed else '완료로 표시' }}"
+                            title="{{ '완료 취소' if todo.is_completed else '완료로 표시' }}">
+                        {% if todo.is_completed %}&#10003;{% endif %}
+                    </button>
+                </form>
+                <div class="todo-content">
+                    <span class="todo-title{{ ' completed' if todo.is_completed else '' }}">{{ todo.title }}</span>
+                    <span class="todo-date">{{ todo.created_at }}</span>
+                </div>
+                <form class="delete-form" action="{{ url_for('delete', todo_id=todo.id) }}" method="POST">
+                    <button type="submit" class="delete-btn">삭제</button>
+                </form>
+            </li>
+            {% else %}
+            <li class="empty">등록된 할 일이 없습니다.</li>
+            {% endfor %}
+        </ul>
+    </main>
+</body>
+</html>
