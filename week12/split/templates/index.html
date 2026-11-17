@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>나눠 내기 계산기</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: #f4f7f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background-color: white; width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #666; font-size: 14px; }
+        input { width: 100%; padding: 12px 15px; border: 2px solid #eee; border-radius: 10px; font-size: 18px; outline: none; }
+        input:focus { border-color: #007bff; }
+        button { width: 100%; padding: 15px; background-color: #007bff; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .result-area { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #eee; text-align: center; }
+        .result-label { color: #888; font-size: 16px; margin-bottom: 10px; }
+        .result-value { font-size: 32px; font-weight: bold; color: #007bff; }
+        .error { color: #dc3545; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h1>💸 나눠 내기</h1>
+        <form method='POST'>
+            <div class='input-group'>
+                <label>영수증 사진 업로드</label>
+                <input type='file' name='receipt_image' accept='image/*'>
+            </div>
+            <hr style='margin: 20px 0; border: 1px solid #eee;'>
+            <div class='input-group'>
+                <label>총 금액 (원)</label>
+                <input type='number' name='total_amount' required value='{{ total_amount if total_amount is not none else "" }}'>
+            </div>
+            <div class='input-group'>
+                <label>인원 수 (명)</label>
+                <input type='number' name='people_count' required value='{{ people_count if people_count is not none else "" }}'>
+            </div>
+            <button type='submit'>계산하기</button>
+        </form>
+
+        {% if items %}
+        <div style='margin-top: 30px;'>
+            <h3>🧾 영수증 내역</h3>
+            <ul style='list-style: none; margin-top: 10px;'>
+                {% for item in items %}
+                <li style='display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;'>
+                    <span>{{ item.item }}</span>
+                    <span>{{ "{:,.0f}".format(item.price) }}원</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if result is not none %}
+        <div class='result-area'>
+            <div class='result-label'>1인당 금액</div>
+            {% if result is string %}
+                <div class='error'>{{ result }}</div>
+            {% else %}
+                <div class='result-value'>{{ "{:,.0f}".format(result) }}원</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
