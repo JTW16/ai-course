@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>나눠 내기 계산기</title>
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --bg-color: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-color: #1C1C1E;
+            --secondary-text: #8E8E93;
+            --error-color: #FF3B30;
+            --border-radius: 16px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .result-card {
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--secondary-text);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #E5E5EA;
+            border-radius: 10px;
+            font-size: 18px;
+            box-sizing: border-box;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .upload-section {
+            text-align: center;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .btn-upload {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 10px 0;
+            transition: opacity 0.2s;
+        }
+
+        .btn-upload:active {
+            opacity: 0.7;
+        }
+
+        #status {
+            margin-top: 10px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .status-loading { color: var(--primary-color); font-weight: bold; }
+        .status-error { color: var(--error-color); font-weight: bold; }
+
+        .item-list {
+            margin-top: 20px;
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        .item-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #F2F2F7;
+            font-size: 16px;
+        }
+
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+
+        .item-name { flex: 1; }
+        .item-price { font-weight: 600; margin-left: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>나눠 내기</h1>
+
+    <div class="card result-card">
+        <div class="result-label">1인당 금액</div>
+        <div id="per-person-amount" class="result-value">0원</div>
+    </div>
+
+    <div class="card">
+        <div class="input-group">
+            <label for="total-amount">총 금액</label>
+            <input type="number" id="total-amount" value="0">
+        </div>
+        <div class="input-group">
+            <label for="people-count">인원수</label>
+            <input type="number" id="people-count" value="1" min="1">
+        </div>
+    </div>
+
+    <div class="card upload-section">
+        <label>영수증 인식</label>
+        <label for="file-input" class="btn-upload">사진 올리기</label>
+        <input type="file" id="file-input" accept="image/*">
+        <div id="status"></div>
+        <ul id="item-list" class="item-list"></ul>
+    </div>
+</div>
+
+<script>
+    async function ask(prompt, imageUrl) {
+        const content = [{ type: "text", text: prompt }];
+        if (imageUrl) content.push({ type: "image_url", image_url: { url: imageUrl } });
+        const r = await fetch("https://krchoi.com/gemma4/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: "gemma4", messages: [{ role: "user", content: content }] })
+        });
+        const data = await r.json();
+        return data.choices[0].message.content;
+    }
+
+    function parseJson(text) {
+        const m = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+        try { return JSON.parse(m ? m[1] : text); } catch (e) { return null; }
+    }
+
+    function shrinkImage(file, maxSize = 1280) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL("image/jpeg", 0.85));
+            };
+            img.onerror = reject;
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    const totalInput = document.getElementById('total-amount');
+    const peopleInput = document.getElementById('people-count');
+    const perPersonDisplay = document.getElementById('per-person-amount');
+    const fileInput = document.getElementById('file-input');
+    const statusDiv = document.getElementById('status');
+    const itemListUl = document.getElementById('item-list');
+
+    function updatePerPerson() {
+        const total = parseInt(totalInput.value) || 0;
+        const people = parseInt(peopleInput.value) || 1;
+        const perPerson = Math.floor(total / (people > 0 ? people : 1));
+        perPersonDisplay.textContent = perPerson.toLocaleString() + '원';
+    }
+
+    totalInput.addEventListener('input', updatePerPerson);
+    peopleInput.addEventListener('input', updatePerPerson);
+
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        statusDiv.textContent = "읽는 중...";
+        statusDiv.className = "status-loading";
+        itemListUl.innerHTML = "";
+
+        try {
+            const base64Image = await shrinkImage(file);
+            const prompt = "Identify the items and their corresponding prices from this receipt. Return ONLY a JSON array of objects. Format: [{\"item\": \"name\", \"price\": 1234}, ...]. Do not include any other text.";
+            
+            const responseText = await ask(prompt, base64Image);
+            const items = parseJson(responseText);
+
+            if (items && Array.isArray(items)) {
+                let totalSum = 0;
+                itemListUl.innerHTML = "";
+                
+                items.forEach(item => {
+                    const price = parseInt(item.price) || 0;
+                    totalSum += price;
+                    
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="item-name">${item.item}</span><span class="item-price">${price.toLocaleString()}원</span>`;
+                    itemListUl.appendChild(li);
+                });
+
+                totalInput.value = totalSum;
+                updatePerPerson();
+                statusDiv.textContent = "";
+                statusDiv.className = "";
+            } else {
+                throw new Error("Parse error");
+            }
+        } catch (err) {
+            console.error(err);
+            statusDiv.textContent = "읽지 못했습니다";
+            statusDiv.className = "status-error";
+        } finally {
+            fileInput.value = "";
+        }
+    });
+
+    updatePerPerson();
+</script>
+</body>
+</html>
